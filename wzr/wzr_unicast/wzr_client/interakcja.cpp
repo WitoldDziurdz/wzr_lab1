@@ -119,6 +119,12 @@ void PoczatekInterakcji()
   unic_send = new unicast_net(10002);       // obiekt do wysy³ania ramek
 
 
+
+  Ramka ramka;
+  ramka.typ = NEW_PLAYER;
+  ramka.stan = pMojObiekt->Stan();
+  unic_send->send((char*)&ramka, ipSend, sizeof(Ramka));
+
   // uruchomienie watku obslugujacego odbior komunikatow
   threadReciv = CreateThread(
       NULL,                        // no security attributes
@@ -167,6 +173,10 @@ void Cykl_WS()
 // ****    poza grafik¹ 
 void ZakonczenieInterakcji()
 {
+  Ramka ramka;
+  ramka.typ = CLOSE_WINDOW;
+  ramka.stan = pMojObiekt->Stan();
+  unic_send->send((char*)&ramka, ipSend, sizeof(Ramka));
   fprintf(f,"Interakcja zosta³a zakoñczona\n");
   fclose(f);
 }

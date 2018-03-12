@@ -33,6 +33,48 @@ std::vector<User*> klienci;
 Ramka ramka;
 StanObiektu stan;
 
+
+bool isExist(unsigned long adres) {
+	for (int i = 0; i < klienci.size(); i++) {
+		if (klienci[i]->addr == adres && klienci[i]->id == ramka.stan.iID) {
+			return true; 
+		}
+	}
+	return false; 
+}
+
+int getIndex(unsigned long adres) {
+	for (int i = 0; i < klienci.size(); i++) {
+		if (klienci[i]->addr == adres && klienci[i]->id == ramka.stan.iID) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void addUser(unsigned long adres) {
+	User* user = new User();
+	user->addr = adres;
+	user->id = ramka.stan.iID;
+	klienci.push_back(user);
+	printf("Connected %lu", adres);
+}
+
+void sendAllUsers() {
+	for (int i = 0; i < klienci.size(); i++) {
+		printf("To %lu (%d)\n", klienci[i], klienci.size());
+		uni_send->send((char*)&ramka, klienci[i]->addr, sizeof(Ramka));
+	}
+}
+
+void removeUser(unsigned long adres) {
+	int index = getIndex(adres); 
+	if (index >= 0) {
+		klienci.erase(klienci.begin()+index);
+	}
+}
+
+
 int main()
 {
 	uni_reciv = new unicast_net(10002);
@@ -43,40 +85,23 @@ int main()
 		unsigned long adres;
 		rozmiar = uni_reciv->reciv((char*)&ramka, &adres, sizeof(Ramka));
 		switch (ramka.typ) {
+		case typy_ramek::NEW_PLAYER:
+			if (!isExist(adres)) {
+				addUser(adres); 
+			}
+			printf("ramka NEW_PLAYER ");
+			break;
 		case typy_ramek::STAN_OBIEKTU:
-			printf("ramka STAN_OBIEKTU");
-			break; 
-		case typy_ramek::NEW_PLAYER: 
-			printf("ramka NEW_PLAYER");
+			printf("ramka STAN_OBIEKTU ");
+			if (isExist(!adres)) {
+				addUser(adres);
+			}
+			sendAllUsers(); 
 			break; 
 		case typy_ramek::CLOSE_WINDOW:
-			printf("ramka CLOSE_WINDOW");
+			removeUser(adres); 
+			printf("ramka CLOSE_WINDOW ");
 			break;
-		}
-
-		
-		
-		bool found = false;
-		for (int i = 0; i < klienci.size(); i++) {
-			if (klienci[i]->addr == adres && klienci[i]->id == ramka.stan.iID) {
-				found = true;
-				break;
-			}
-		}
-
-		
-
-		if (!found) {
-			User* user = new User();
-			user->addr = adres;
-			user->id = ramka.stan.iID;
-			klienci.push_back(user);
-			printf("Connected %lu", adres);
-		}
-
-		for (int i = 0; i < klienci.size(); i++) {
-			printf("To %lu (%d)\n", klienci[i], klienci.size());
-			uni_send->send((char*)&ramka, klienci[i]->addr, sizeof(Ramka));
 		}
 	}
 
