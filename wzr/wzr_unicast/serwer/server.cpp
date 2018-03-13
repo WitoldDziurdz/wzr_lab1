@@ -16,9 +16,9 @@ enum typy_ramek { STAN_OBIEKTU, NEW_PLAYER, CLOSE_WINDOW };
 
 struct Ramka                                    // g³ówna struktura s³u¿¹ca do przesy³ania informacji
 {
-	int typ;
-	StanObiektu stan;
-	float wartosc_oferty;
+  int typ;
+  long moment_wyslania;
+  StanObiektu stan;                             
 };
 
 struct User {
